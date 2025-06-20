@@ -1,6 +1,8 @@
 import torch
 import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 movies_df = pd.read_csv("data/ml-latest-small/movies.csv")
 ratings_df = pd.read_csv("data/ml-latest-small/ratings.csv")
@@ -50,3 +52,41 @@ def recommend_svd(user_id, model, ratings_df, movies_df, n=10):
 
     return movies_df[movies_df['movieId'].isin(top_ids)][['movieId', 'title']]
 
+
+
+train_edf = pd.read_csv('data/movies_with_description.csv')
+train_edf['description'] = train_edf['description'].fillna('').str.strip()
+train_edf['cast'] = train_edf['cast'].fillna('').str.strip()
+train_edf['genres'] = train_edf['genres'].fillna('').replace('(no genres listed)', '').str.strip()
+
+train_edf['combined_features'] = (
+    train_edf['genres'] + ' ' +
+    train_edf['description'] + ' ' +
+    train_edf['cast']
+)
+
+
+combo_vectorizer = TfidfVectorizer(stop_words='english')
+combo_tfidf_train = combo_vectorizer.fit_transform(train_edf['combined_features'])
+
+vectorizer = TfidfVectorizer(stop_words='english')
+tfidf_matrix = vectorizer.fit_transform(train_edf['combined_features'])
+
+movieId_to_index = pd.Series(train_edf.index, index=train_edf['movieId'])
+
+
+def build_temp_user_profile(new_rows):
+    user_ratings = new_rows
+    indices = user_ratings['movieId'].map(movieId_to_index).dropna().astype(int)
+    tfidf_vectors = tfidf_matrix[indices]
+    ratings = user_ratings.loc[indices.index, 'rating'].values.reshape(-1, 1)
+    profile = np.sum(tfidf_vectors.multiply(ratings).toarray(), axis=0)
+    return profile / np.linalg.norm(profile)
+
+def recommend_temp_user(n, new_rows, new_user_id, user_ratings_cb):
+    profile = build_temp_user_profile(new_rows)
+    similarities = cosine_similarity(tfidf_matrix, profile.reshape(1, -1)).flatten()
+    watched = list(user_ratings_cb.keys())
+    unwatched_mask = ~train_edf['movieId'].isin(watched)
+    top_indices = np.argsort(similarities * unwatched_mask.to_numpy())[::-1][:n]
+    return train_edf.iloc[top_indices][['title', 'genres', 'description', 'cast']]
