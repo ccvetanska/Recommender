@@ -56,18 +56,11 @@ Hybrid Content-Based Tab
 Personalized suggestions using a user profile vector and TF-IDF features.
 
 ## Requirements
-streamlit
-
-pandas, numpy, scikit-learn, torch
-
-surprise
-
-joblib
-
-nltk (for description cleaning)
 
 Install dependencies with:
 `pip install -r requirements.txt`
+
+#### Keep in mind that you may have problems installing Surprise library. It requires a specific version of C++ to be installed on your machine (14.0)
 
 ## How to Run
 
