@@ -1,3 +1,5 @@
 .venv
 .~lock.evaluate.ods#
 __pycache__
+__pycache__/recommend_funcs.cpython-311.pyc
+__pycache__/model_defs.cpython-311.pyc
