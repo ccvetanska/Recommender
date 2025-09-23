@@ -46,13 +46,13 @@ Evaluation is consistent across models to ensure fair comparison.
 ## Streamlit UI
 The interface is split into 3 tabs:
 
-User-based Recommendations
+User-based Recommendations: 
 Select a known user ID and model to get recommendations.
 
-Rate and Get Recommendations
+Rate and Get Recommendations: 
 New users can rate 10 random movies and get cold-start recommendations.
 
-Hybrid Content-Based Tab
+Hybrid Content-Based Tab: 
 Personalized suggestions using a user profile vector and TF-IDF features.
 
 ## Requirements
